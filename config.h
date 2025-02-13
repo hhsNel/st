@@ -196,7 +196,7 @@ static Shortcut shortcuts[] = {
 	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
 	{ TERMMOD,              XK_L,           zoom,           {.f = +1} },	// ctrl shift = -> zoom in
 	{ TERMMOD,              XK_H,           zoom,           {.f = -1} },	// ctrl shift - -> zoom out
-	{ TERMMOD,              XK_0,           zoomreset,      {.f =  0} },
+	{ TERMMOD,              XK_Z,           zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
 	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
