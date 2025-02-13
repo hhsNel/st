@@ -60,7 +60,7 @@ static double maxlatency = 33;
  * blinking timeout (set to 0 to disable blinking) for the terminal blinking
  * attribute.
  */
-static unsigned int blinktimeout = 500;
+static unsigned int blinktimeout = 800;
 
 /*
  * thickness of underline and bar cursors
@@ -96,32 +96,32 @@ unsigned int tabspaces = 8;
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
 	/* 8 normal colors */
-	"#000000",
-	"#009f00",
-	"#559400",
-	"#aaba00",
-	"#ff7f00",
-	"#00009f",
-	"#9f009f",
-	"#9f0000",
+	"black",
+	"red3",
+	"green3",
+	"yellow3",
+	"blue2",
+	"magenta3",
+	"cyan3",
+	"gray90",
 
 	/* 8 bright colors */
-	"#7f7f7f",
-	"#00ff00",
-	"#9fbf00",
-	"#ffbf00",
-	"#ffff00",
-	"#0000ff",
-	"#ff00ff",
-	"#ff0000",
+	"gray50",
+	"red",
+	"green",
+	"yellow",
+	"#5c5cff",
+	"magenta",
+	"cyan",
+	"white",
 
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
-	//"#007f00", /* default foreground colour */
-	//"#000000", /* default background colour */
-	//"#00ff00", // cursor color
-	"#7f00bf", // selected cursor color (you have ur cursor and ur selection overlaps with its pos)
+	"#cccccc",
+	"#555555",
+	"gray90", /* default foreground colour */
+	"black", /* default background colour */
 };
 
 
@@ -129,10 +129,10 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 2;
-unsigned int defaultbg = 0;
-unsigned int defaultcs = 11;
-static unsigned int defaultrcs = 256;
+unsigned int defaultfg = 258;
+unsigned int defaultbg = 259;
+unsigned int defaultcs = 256;
+static unsigned int defaultrcs = 257;
 
 /*
  * Default shape of cursor
@@ -144,12 +144,6 @@ static unsigned int defaultrcs = 256;
 static unsigned int cursorshape = 2;
 
 /*
- * Whether to use pixel geometry or cell geometry
- */
-
-static Geometry geometry = CellGeometry;
-
-/*
  * Default columns and rows numbers
  */
 
@@ -157,32 +151,24 @@ static unsigned int cols = 80;
 static unsigned int rows = 24;
 
 /*
- * Default width and height (including borders!)
- */
-
-static unsigned int width = 564;
-static unsigned int height = 364;
-
-/*
  * Default colour and shape of the mouse cursor
  */
-static unsigned int mouseshape = XC_cross_reverse;	// funny British Flag-ish/crosshair-ish cursor
-static unsigned int mousefg = 4;	// make it synergize with the text cursor
-static unsigned int mousebg = 15;	// again, synergy
+static unsigned int mouseshape = XC_xterm;
+static unsigned int mousefg = 7;
+static unsigned int mousebg = 0;
 
 /*
  * Color used to display font attributes when fontconfig selected a font which
  * doesn't match the ones requested.
  */
-static unsigned int defaultattr = 8;
+static unsigned int defaultattr = 11;
 
 /*
  * Force mouse select/shortcuts while mask is active (when MODE_MOUSE is set).
  * Note that if you want to use ShiftMask with selmasks, set this to an other
  * modifier, set to 0 to not use it.
  */
-static uint forcemousemod = ShiftMask;		// idk what this does and better not to touch it
-
+static uint forcemousemod = ShiftMask;
 
 /*
  * Internal mouse shortcuts.
@@ -207,9 +193,9 @@ static Shortcut shortcuts[] = {
 	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
 	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
 	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
-	{ TERMMOD,              XK_L,           zoom,           {.f = +1} },	// ctrl shift = -> zoom in
-	{ TERMMOD,              XK_H,           zoom,           {.f = -1} },	// ctrl shift - -> zoom out
-	{ TERMMOD,              XK_Z,           zoomreset,      {.f =  0} },
+	{ TERMMOD,              XK_Prior,       zoom,           {.f = +1} },
+	{ TERMMOD,              XK_Next,        zoom,           {.f = -1} },
+	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
 	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
