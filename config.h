@@ -144,12 +144,6 @@ static unsigned int defaultrcs = 256;
 static unsigned int cursorshape = 2;
 
 /*
- * Whether to use pixel geometry or cell geometry
- */
-
-static Geometry geometry = CellGeometry;
-
-/*
  * Default columns and rows numbers
  */
 
