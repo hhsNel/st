@@ -5,8 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-/* static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true"; */
-static char *font = "Terminus:pixelsize=12:antialias=true:autohint=true";
+static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true";
 static int borderpx = 2;
 
 /*
@@ -152,13 +151,6 @@ static unsigned int cols = 80;
 static unsigned int rows = 24;
 
 /*
- * Default width and height (including borders!)
- */
-
-static unsigned int width = 564;
-static unsigned int height = 364;
-
-/*
  * Default colour and shape of the mouse cursor
  */
 static unsigned int mouseshape = XC_cross_reverse;	// funny British Flag-ish/crosshair-ish cursor
@@ -210,8 +202,6 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
-	{ TERMMOD,              XK_K,           kscrollup,      {.i = +1} },
-	{ TERMMOD,              XK_J,           kscrolldown,    {.i = +1} },
 };
 
 /*
