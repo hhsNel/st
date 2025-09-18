@@ -5,7 +5,8 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true";
+/* static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true"; */
+static char *font = "Terminus:pixelsize=12:antialias=true:autohint=true";
 static int borderpx = 2;
 
 /*
@@ -60,7 +61,7 @@ static double maxlatency = 33;
  * blinking timeout (set to 0 to disable blinking) for the terminal blinking
  * attribute.
  */
-static unsigned int blinktimeout = 800;
+static unsigned int blinktimeout = 500;
 
 /*
  * thickness of underline and bar cursors
@@ -96,32 +97,32 @@ unsigned int tabspaces = 8;
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
 	/* 8 normal colors */
-	"black",
-	"red3",
-	"green3",
-	"yellow3",
-	"blue2",
-	"magenta3",
-	"cyan3",
-	"gray90",
+	"#000000",
+	"#009f00",
+	"#559400",
+	"#aaba00",
+	"#ff7f00",
+	"#00009f",
+	"#9f009f",
+	"#9f0000",
 
 	/* 8 bright colors */
-	"gray50",
-	"red",
-	"green",
-	"yellow",
-	"#5c5cff",
-	"magenta",
-	"cyan",
-	"white",
+	"#7f7f7f",
+	"#00ff00",
+	"#9fbf00",
+	"#ffbf00",
+	"#ffff00",
+	"#0000ff",
+	"#ff00ff",
+	"#ff0000",
 
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
-	"#cccccc",
-	"#555555",
-	"gray90", /* default foreground colour */
-	"black", /* default background colour */
+	//"#007f00", /* default foreground colour */
+	//"#000000", /* default background colour */
+	//"#00ff00", // cursor color
+	"#7f00bf", // selected cursor color (you have ur cursor and ur selection overlaps with its pos)
 };
 
 
@@ -129,10 +130,10 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 258;
-unsigned int defaultbg = 259;
-unsigned int defaultcs = 256;
-static unsigned int defaultrcs = 257;
+unsigned int defaultfg = 2;
+unsigned int defaultbg = 0;
+unsigned int defaultcs = 11;
+static unsigned int defaultrcs = 256;
 
 /*
  * Default shape of cursor
@@ -144,6 +145,12 @@ static unsigned int defaultrcs = 257;
 static unsigned int cursorshape = 2;
 
 /*
+ * Whether to use pixel geometry or cell geometry
+ */
+
+static Geometry geometry = CellGeometry;
+
+/*
  * Default columns and rows numbers
  */
 
@@ -151,24 +158,32 @@ static unsigned int cols = 80;
 static unsigned int rows = 24;
 
 /*
+ * Default width and height (including borders!)
+ */
+
+static unsigned int width = 564;
+static unsigned int height = 364;
+
+/*
  * Default colour and shape of the mouse cursor
  */
-static unsigned int mouseshape = XC_xterm;
-static unsigned int mousefg = 7;
-static unsigned int mousebg = 0;
+static unsigned int mouseshape = XC_cross_reverse;	// funny British Flag-ish/crosshair-ish cursor
+static unsigned int mousefg = 4;	// make it synergize with the text cursor
+static unsigned int mousebg = 15;	// again, synergy
 
 /*
  * Color used to display font attributes when fontconfig selected a font which
  * doesn't match the ones requested.
  */
-static unsigned int defaultattr = 11;
+static unsigned int defaultattr = 8;
 
 /*
  * Force mouse select/shortcuts while mask is active (when MODE_MOUSE is set).
  * Note that if you want to use ShiftMask with selmasks, set this to an other
  * modifier, set to 0 to not use it.
  */
-static uint forcemousemod = ShiftMask;
+static uint forcemousemod = ShiftMask;		// idk what this does and better not to touch it
+
 
 /*
  * Internal mouse shortcuts.
@@ -193,16 +208,16 @@ static Shortcut shortcuts[] = {
 	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
 	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
 	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
-	{ TERMMOD,              XK_Prior,       zoom,           {.f = +1} },
-	{ TERMMOD,              XK_Next,        zoom,           {.f = -1} },
-	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
+	{ TERMMOD,              XK_L,           zoom,           {.f = +1} },	// ctrl shift = -> zoom in
+	{ TERMMOD,              XK_H,           zoom,           {.f = -1} },	// ctrl shift - -> zoom out
+	{ TERMMOD,              XK_Z,           zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
 	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
-	{ ShiftMask,            XK_Page_Up,     kscrollup,      {.i = -1} },
-	{ ShiftMask,            XK_Page_Down,   kscrolldown,    {.i = -1} },
+	{ TERMMOD,              XK_K,           kscrollup,      {.i = +1} },
+	{ TERMMOD,              XK_J,           kscrolldown,    {.i = +1} },
 };
 
 /*

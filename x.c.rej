@@ -1,21 +1,14 @@
 --- x.c
 +++ x.c
-@@ -1126,8 +1131,16 @@ xinit(int cols, int rows)
- 	xloadcols();
+@@ -1111,10 +1123,10 @@ void
+ xinit(int cols, int rows)
+ {
+ 	XGCValues gcvalues;
+-	Cursor cursor;
+ 	Window parent;
+ 	pid_t thispid = getpid();
+ 	XColor xmousefg, xmousebg;
++	Pixmap blankpm;
  
- 	/* adjust fixed window geometry */
--	win.w = 2 * borderpx + cols * win.cw;
--	win.h = 2 * borderpx + rows * win.ch;
-+	switch (geometry) {
-+	case CellGeometry:
-+		win.w = 2 * borderpx + w * win.cw;
-+		win.h = 2 * borderpx + h * win.ch;
-+		break;
-+	case PixelGeometry:
-+		win.w = w;
-+		win.h = h;
-+		break;
-+	}
- 	if (xw.gm & XNegative)
- 		xw.l += DisplayWidth(xw.dpy, xw.scr) - win.w - 2;
- 	if (xw.gm & YNegative)
+ 	if (!(xw.dpy = XOpenDisplay(NULL)))
+ 		die("can't open display\n");
