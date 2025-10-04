@@ -123,6 +123,8 @@ typedef struct {
 	int histi;    /* history index */
 	int scr;      /* scroll back */
 	int *dirty;   /* dirtyness of lines */
+	int *dirtystart;   /* beginning of dirty segemnt */
+	int *dirtyend;     /* end of dirty segment */
 	TCursor c;    /* cursor */
 	int ocx;      /* old cursor col */
 	int ocy;      /* old cursor row */
@@ -437,13 +439,13 @@ selstart(int col, int row, int snap)
 
 	if (sel.snap != 0)
 		sel.mode = SEL_READY;
-	tsetdirt(sel.nb.y, sel.ne.y);
+	tsetdirtrect(sel.nb.x, sel.nb.y, sel.ne.x, sel.ne.y);
 }
 
 void
 selextend(int col, int row, int type, int done)
 {
-	int oldey, oldex, oldsby, oldsey, oldtype;
+	int oldey, oldex, oldsbx, oldsby, oldsex, oldsey, oldtype;
 
 	if (sel.mode == SEL_IDLE)
 		return;
@@ -454,7 +456,9 @@ selextend(int col, int row, int type, int done)
 
 	oldey = sel.oe.y;
 	oldex = sel.oe.x;
+	oldsbx = sel.nb.x;
 	oldsby = sel.nb.y;
+	oldsex = sel.ne.x;
 	oldsey = sel.ne.y;
 	oldtype = sel.type;
 
@@ -464,7 +468,7 @@ selextend(int col, int row, int type, int done)
 	sel.type = type;
 
 	if (oldey != sel.oe.y || oldex != sel.oe.x || oldtype != sel.type || sel.mode == SEL_EMPTY)
-		tsetdirt(MIN(sel.nb.y, oldsby), MAX(sel.ne.y, oldsey));
+		tsetdirtrect(MIN(sel.nb.x, oldsbx), MIN(sel.nb.y, oldsby), MAX(sel.ne.x, oldsex), MAX(sel.ne.y, oldsey));
 
 	sel.mode = done ? SEL_IDLE : SEL_READY;
 }
@@ -648,7 +652,7 @@ selclear(void)
 		return;
 	sel.mode = SEL_IDLE;
 	sel.ob.x = -1;
-	tsetdirt(sel.nb.y, sel.ne.y);
+	tsetdirtrect(sel.nb.x, sel.nb.y, sel.ne.x, sel.ne.y);
 }
 
 void
@@ -980,6 +984,7 @@ tsetdirt(int top, int bot)
 		term.dirty[i] = 1;
 }
 
+
 void
 tsetdirtattr(int attr)
 {
@@ -988,10 +993,60 @@ tsetdirtattr(int attr)
 	for (i = 0; i < term.row-1; i++) {
 		for (j = 0; j < term.col-1; j++) {
 			if (term.line[i][j].mode & attr) {
-				tsetdirt(i, i);
+				tsetdirtcol(j, i);
 				break;
 			}
 		}
+	}
+}
+
+void
+tsetdirtcol(int x, int y) {
+	LIMIT(y, 0, term.row-1);
+	LIMIT(x, 0, term.col-1);
+
+	term.dirty[y] = 1;
+	if(x < term.dirtystart[y] || term.dirtystart[y] == -1) {
+		term.dirtystart[y] = x;
+	}
+	if(x > term.dirtyend[y] || term.dirtyend[y] == -1) {
+		term.dirtyend[y] = x;
+	}
+}
+
+void
+tsetdirtrange(int x1, int x2, int y) {
+	int i;
+
+	LIMIT(y,  0, term.row-1);
+	LIMIT(x1, 0, term.col-1);
+	LIMIT(x2, 0, term.col-1);
+	if(x1 > x2) {
+		i = x2;
+		x2 = x1;
+		x1 = i;
+	}
+
+	term.dirty[y] = 1;
+	if(term.dirtystart[y] == -1) {
+		term.dirtystart[y] = x1;
+		term.dirtyend[y] = x2;
+		return;
+	}
+	if(x1 < term.dirtystart[y]) {
+		term.dirtystart[y] = x1;
+	}
+	if(x2 > term.dirtyend[y]) {
+		term.dirtyend[y] = x2;
+	}
+}
+
+void
+tsetdirtrect(int x1, int y1, int x2, int y2) {
+	int i;
+
+	for (i = y1; i <= y2; i++) {
+		tsetdirtrange(x1, x2, i);
 	}
 }
 
@@ -1040,6 +1095,11 @@ treset(void)
 		tcursor(CURSOR_SAVE);
 		tclearregion(0, 0, term.col-1, term.row-1);
 		tswapscreen();
+	}
+
+	for(i = 0; i < term.row; ++i) {
+		term.dirty[i] = 0;
+		term.dirtystart[i] = term.dirtyend[i] = -1;
 	}
 }
 
@@ -1275,7 +1335,7 @@ tsetchar(Rune u, const Glyph *attr, int x, int y)
 		term.line[y][x-1].mode &= ~ATTR_WIDE;
 	}
 
-	term.dirty[y] = 1;
+	tsetdirtcol(x, y);
 	term.line[y][x] = *attr;
 	term.line[y][x].u = u;
 
@@ -1299,8 +1359,8 @@ tclearregion(int x1, int y1, int x2, int y2)
 	LIMIT(y1, 0, term.row-1);
 	LIMIT(y2, 0, term.row-1);
 
+	tsetdirtrect(x1, y1, x2, y2);
 	for (y = y1; y <= y2; y++) {
-		term.dirty[y] = 1;
 		for (x = x1; x <= x2; x++) {
 			gp = &term.line[y][x];
 			if (selected(x, y))
@@ -2666,7 +2726,15 @@ tresize(int col, int row)
 	term.line = xrealloc(term.line, row * sizeof(Line));
 	term.alt  = xrealloc(term.alt,  row * sizeof(Line));
 	term.dirty = xrealloc(term.dirty, row * sizeof(*term.dirty));
+	/* allocate dirtystart/end buffers */
+	term.dirtystart = xrealloc(term.dirtystart, row * sizeof(*term.dirtystart));
+	term.dirtyend = xrealloc(term.dirtyend, row * sizeof(*term.dirtyend));
 	term.tabs = xrealloc(term.tabs, col * sizeof(*term.tabs));
+
+	for(i = 0; i < row; ++i) {
+		term.dirtystart[i] = term.dirtyend[i] = -1;
+		term.dirty[i] = 1;
+	}
 
 	for (i = 0; i < HISTSIZE; i++) {
 		term.hist[i] = xrealloc(term.hist[i], col * sizeof(Glyph));
@@ -2727,14 +2795,20 @@ resettitle(void)
 void
 drawregion(int x1, int y1, int x2, int y2)
 {
-	int y;
+	int y, start, end;
 
 	for (y = y1; y < y2; y++) {
-		if (!term.dirty[y])
-			continue;
-
-		term.dirty[y] = 0;
-		xdrawline(TLINE(y), x1, y, x2);
+		if (term.dirty[y]) {
+			start = term.dirtystart[y];
+			end = term.dirtyend[y];
+			if (start == -1) {  /* Fallback to full if no col tracking */
+				start = x1;
+				end = x2;
+			}
+			xdrawline(TLINE(y), start, y, end + 1);
+			term.dirtystart[y] = term.dirtyend[y] = -1;
+			term.dirty[y] = 0;
+		}
 	}
 }
 
