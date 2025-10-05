@@ -440,10 +440,6 @@ selstart(int col, int row, int snap)
 	if (sel.snap != 0)
 		sel.mode = SEL_READY;
 	tsetdirtrect(sel.nb.x, sel.nb.y, sel.ne.x, sel.ne.y);
-<<<<<<< HEAD
-	/* tsetdirt(sel.nb.y, sel.ne.y); */
-=======
->>>>>>> origin/master
 }
 
 void
@@ -473,10 +469,6 @@ selextend(int col, int row, int type, int done)
 
 	if (oldey != sel.oe.y || oldex != sel.oe.x || oldtype != sel.type || sel.mode == SEL_EMPTY)
 		tsetdirtrect(MIN(sel.nb.x, oldsbx), MIN(sel.nb.y, oldsby), MAX(sel.ne.x, oldsex), MAX(sel.ne.y, oldsey));
-<<<<<<< HEAD
-		/* tsetdirt(MIN(sel.nb.y, oldsby), MAX(sel.ne.y, oldsey)); */
-=======
->>>>>>> origin/master
 
 	sel.mode = done ? SEL_IDLE : SEL_READY;
 }
@@ -661,10 +653,6 @@ selclear(void)
 	sel.mode = SEL_IDLE;
 	sel.ob.x = -1;
 	tsetdirtrect(sel.nb.x, sel.nb.y, sel.ne.x, sel.ne.y);
-<<<<<<< HEAD
-	/* tsetdirt(sel.nb.y, sel.ne.y); */
-=======
->>>>>>> origin/master
 }
 
 void
@@ -1008,10 +996,6 @@ tsetdirtattr(int attr)
 		for (j = 0; j < term.col-1; j++) {
 			if (term.line[i][j].mode & attr) {
 				tsetdirtcol(j, i);
-<<<<<<< HEAD
-				/* tsetdirt(i, i); */
-=======
->>>>>>> origin/master
 				break;
 			}
 		}
@@ -1354,10 +1338,6 @@ tsetchar(Rune u, const Glyph *attr, int x, int y)
 	}
 
 	tsetdirtcol(x, y);
-<<<<<<< HEAD
-	/* tsetdirt(y, y); */
-=======
->>>>>>> origin/master
 	term.line[y][x] = *attr;
 	term.line[y][x].u = u;
 
@@ -1382,10 +1362,6 @@ tclearregion(int x1, int y1, int x2, int y2)
 	LIMIT(y2, 0, term.row-1);
 
 	tsetdirtrect(x1, y1, x2, y2);
-<<<<<<< HEAD
-	/* tsetdirt(y1, y2); */
-=======
->>>>>>> origin/master
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
 			gp = &term.line[y][x];
@@ -2831,16 +2807,9 @@ drawregion(int x1, int y1, int x2, int y2)
 			end = term.dirtyend[y];
 			if (start == -1) {  /* Fallback to full if no col tracking */
 				start = x1;
-<<<<<<< HEAD
 				end = x2 - 1;
 			}
 			xdrawline(term.line[y], start, y, end + 1);
-=======
-				end = x2;
-			}
-			if(end < term.col - 1) ++end;
-			xdrawline(term.line[y], start, y, end);
->>>>>>> origin/master
 			term.dirtystart[y] = term.dirtyend[y] = -1;
 			term.dirty[y] = 0;
 		}
