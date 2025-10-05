@@ -1,23 +1,6 @@
-<<<<<<< HEAD
 diff -u st/st.c st-patched/st.c
 --- st/st.c	2025-10-05 01:53:11.167987562 +0200
 +++ st-patched/st.c	2025-10-05 14:19:46.947761628 +0200
-=======
---- st/st.h	2025-10-05 01:53:11.167987562 +0200
-+++ st-patched/st.h	2025-10-05 01:51:14.569130042 +0200
-@@ -90,6 +90,9 @@
- void tnew(int, int);
- void tresize(int, int);
- void tsetdirtattr(int);
-+void tsetdirtcol(int, int); /* mark single cell as dirty */
-+void tsetdirtrange(int, int, int); /* mark from X to X in a line as dirty */
-+void tsetdirtrect(int, int, int, int); /* mark a rectangle as dirty */
- void ttyhangup(void);
- int ttynew(const char *, char *, const char *, char **);
- size_t ttyread(void);
---- st/st.c	2025-10-05 01:53:11.167987562 +0200
-+++ st-patched/st.c	2025-10-05 01:52:49.666946669 +0200
->>>>>>> origin/master
 @@ -116,6 +116,8 @@
  	Line *line;   /* screen */
  	Line *alt;    /* alternate screen */
@@ -27,20 +10,13 @@ diff -u st/st.c st-patched/st.c
  	TCursor c;    /* cursor */
  	int ocx;      /* old cursor col */
  	int ocy;      /* old cursor row */
-<<<<<<< HEAD
 @@ -432,13 +434,14 @@
-=======
-@@ -432,13 +434,13 @@
->>>>>>> origin/master
  
  	if (sel.snap != 0)
  		sel.mode = SEL_READY;
 -	tsetdirt(sel.nb.y, sel.ne.y);
 +	tsetdirtrect(sel.nb.x, sel.nb.y, sel.ne.x, sel.ne.y);
-<<<<<<< HEAD
 +	/* tsetdirt(sel.nb.y, sel.ne.y); */
-=======
->>>>>>> origin/master
  }
  
  void
@@ -51,11 +27,7 @@ diff -u st/st.c st-patched/st.c
  
  	if (sel.mode == SEL_IDLE)
  		return;
-<<<<<<< HEAD
 @@ -449,7 +452,9 @@
-=======
-@@ -449,7 +451,9 @@
->>>>>>> origin/master
  
  	oldey = sel.oe.y;
  	oldex = sel.oe.x;
@@ -65,34 +37,22 @@ diff -u st/st.c st-patched/st.c
  	oldsey = sel.ne.y;
  	oldtype = sel.type;
  
-<<<<<<< HEAD
 @@ -459,7 +464,8 @@
-=======
-@@ -459,7 +463,7 @@
->>>>>>> origin/master
  	sel.type = type;
  
  	if (oldey != sel.oe.y || oldex != sel.oe.x || oldtype != sel.type || sel.mode == SEL_EMPTY)
 -		tsetdirt(MIN(sel.nb.y, oldsby), MAX(sel.ne.y, oldsey));
 +		tsetdirtrect(MIN(sel.nb.x, oldsbx), MIN(sel.nb.y, oldsby), MAX(sel.ne.x, oldsex), MAX(sel.ne.y, oldsey));
-<<<<<<< HEAD
 +		/* tsetdirt(MIN(sel.nb.y, oldsby), MAX(sel.ne.y, oldsey)); */
  
  	sel.mode = done ? SEL_IDLE : SEL_READY;
  }
 @@ -643,7 +649,8 @@
-=======
- 
- 	sel.mode = done ? SEL_IDLE : SEL_READY;
- }
-@@ -643,7 +647,7 @@
->>>>>>> origin/master
  		return;
  	sel.mode = SEL_IDLE;
  	sel.ob.x = -1;
 -	tsetdirt(sel.nb.y, sel.ne.y);
 +	tsetdirtrect(sel.nb.x, sel.nb.y, sel.ne.x, sel.ne.y);
-<<<<<<< HEAD
 +	/* tsetdirt(sel.nb.y, sel.ne.y); */
  }
  
@@ -111,29 +71,16 @@ diff -u st/st.c st-patched/st.c
  
  void
 @@ -980,7 +990,8 @@
-=======
- }
- 
- void
-@@ -980,7 +985,7 @@
->>>>>>> origin/master
  	for (i = 0; i < term.row-1; i++) {
  		for (j = 0; j < term.col-1; j++) {
  			if (term.line[i][j].mode & attr) {
 -				tsetdirt(i, i);
 +				tsetdirtcol(j, i);
-<<<<<<< HEAD
 +				/* tsetdirt(i, i); */
  				break;
  			}
  		}
 @@ -988,6 +999,56 @@
-=======
- 				break;
- 			}
- 		}
-@@ -988,6 +993,56 @@
->>>>>>> origin/master
  }
  
  void
@@ -190,11 +137,7 @@ diff -u st/st.c st-patched/st.c
  tfulldirt(void)
  {
  	tsetdirt(0, term.row-1);
-<<<<<<< HEAD
 @@ -1033,6 +1094,11 @@
-=======
-@@ -1033,6 +1088,11 @@
->>>>>>> origin/master
  		tclearregion(0, 0, term.col-1, term.row-1);
  		tswapscreen();
  	}
@@ -206,42 +149,27 @@ diff -u st/st.c st-patched/st.c
  }
  
  void
-<<<<<<< HEAD
 @@ -1215,7 +1281,8 @@
-=======
-@@ -1215,7 +1275,7 @@
->>>>>>> origin/master
  		term.line[y][x-1].mode &= ~ATTR_WIDE;
  	}
  
 -	term.dirty[y] = 1;
 +	tsetdirtcol(x, y);
-<<<<<<< HEAD
 +	/* tsetdirt(y, y); */
  	term.line[y][x] = *attr;
  	term.line[y][x].u = u;
  }
 @@ -1236,8 +1303,9 @@
-=======
- 	term.line[y][x] = *attr;
- 	term.line[y][x].u = u;
- }
-@@ -1236,8 +1296,8 @@
->>>>>>> origin/master
  	LIMIT(y1, 0, term.row-1);
  	LIMIT(y2, 0, term.row-1);
  
 +	tsetdirtrect(x1, y1, x2, y2);
-<<<<<<< HEAD
 +	/* tsetdirt(y1, y2); */
-=======
->>>>>>> origin/master
  	for (y = y1; y <= y2; y++) {
 -		term.dirty[y] = 1;
  		for (x = x1; x <= x2; x++) {
  			gp = &term.line[y][x];
  			if (selected(x, y))
-<<<<<<< HEAD
 @@ -1264,6 +1332,7 @@
  	line = term.line[term.c.y];
  
@@ -259,9 +187,6 @@ diff -u st/st.c st-patched/st.c
  }
  
 @@ -2603,8 +2673,16 @@
-=======
-@@ -2603,8 +2663,16 @@
->>>>>>> origin/master
  	term.line = xrealloc(term.line, row * sizeof(Line));
  	term.alt  = xrealloc(term.alt,  row * sizeof(Line));
  	term.dirty = xrealloc(term.dirty, row * sizeof(*term.dirty));
@@ -278,11 +203,7 @@ diff -u st/st.c st-patched/st.c
  	/* resize each row to new width, zero-pad if needed */
  	for (i = 0; i < minrow; i++) {
  		term.line[i] = xrealloc(term.line[i], col * sizeof(Glyph));
-<<<<<<< HEAD
 @@ -2656,14 +2734,20 @@
-=======
-@@ -2656,14 +2724,20 @@
->>>>>>> origin/master
  void
  drawregion(int x1, int y1, int x2, int y2)
  {
@@ -300,23 +221,15 @@ diff -u st/st.c st-patched/st.c
 +			end = term.dirtyend[y];
 +			if (start == -1) {  /* Fallback to full if no col tracking */
 +				start = x1;
-<<<<<<< HEAD
 +				end = x2 - 1;
 +			}
 +			xdrawline(term.line[y], start, y, end + 1);
-=======
-+				end = x2;
-+			}
-+			if(end < term.col - 1) ++end;
-+			xdrawline(term.line[y], start, y, end);
->>>>>>> origin/master
 +			term.dirtystart[y] = term.dirtyend[y] = -1;
 +			term.dirty[y] = 0;
 +		}
  	}
  }
  
-<<<<<<< HEAD
 diff -u st/st.h st-patched/st.h
 --- st/st.h	2025-10-05 01:53:11.167987562 +0200
 +++ st-patched/st.h	2025-10-05 01:57:41.325507996 +0200
@@ -342,8 +255,3 @@ diff -u st/x.c st-patched/x.c
  	return IS_SET(MODE_VISIBLE);
  }
  
-=======
-1653a1654,1655
-> 	if (IS_SET(MODE_VISIBLE))
-> 		XCopyArea(xw.dpy, xw.win, xw.buf, dc.gc, 0, 0, win.w, win.h, 0, 0);
->>>>>>> origin/master
