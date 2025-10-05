@@ -199,6 +199,7 @@
 +				start = x1;
 +				end = x2;
 +			}
++			if(end < term.col - 1) ++end;
 +			xdrawline(term.line[y], start, y, end);
 +			term.dirtystart[y] = term.dirtyend[y] = -1;
 +			term.dirty[y] = 0;
