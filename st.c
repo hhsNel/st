@@ -984,7 +984,6 @@ tsetdirt(int top, int bot)
 		term.dirty[i] = 1;
 }
 
-
 void
 tsetdirtattr(int attr)
 {
@@ -2805,7 +2804,7 @@ drawregion(int x1, int y1, int x2, int y2)
 				start = x1;
 				end = x2;
 			}
-			xdrawline(TLINE(y), start, y, end + 1);
+			xdrawline(term.line[y], start, y, end);
 			term.dirtystart[y] = term.dirtyend[y] = -1;
 			term.dirty[y] = 0;
 		}
