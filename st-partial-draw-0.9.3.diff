@@ -1,6 +1,9 @@
-diff -u st/st.c st-patched/st.c
---- st/st.c	2025-10-05 01:53:11.167987562 +0200
-+++ st-patched/st.c	2025-10-05 14:19:46.947761628 +0200
+Only in st-patched-new/: config.h
+Common subdirectories: suckless-st/.git and st-patched-new/.git
+Only in st-patched-new/: st
+diff -u suckless-st/st.c st-patched-new/st.c
+--- suckless-st/st.c	2025-10-05 01:53:11.167987562 +0200
++++ st-patched-new/st.c	2025-10-05 16:39:08.485515728 +0200
 @@ -116,6 +116,8 @@
  	Line *line;   /* screen */
  	Line *alt;    /* alternate screen */
@@ -170,23 +173,61 @@ diff -u st/st.c st-patched/st.c
  		for (x = x1; x <= x2; x++) {
  			gp = &term.line[y][x];
  			if (selected(x, y))
-@@ -1264,6 +1332,7 @@
+@@ -1253,8 +1321,8 @@
+ void
+ tdeletechar(int n)
+ {
+-	int dst, src, size;
+-	Glyph *line;
++	int dst, src, size, i;
++	Glyph *line, *oldline;
+ 
+ 	LIMIT(n, 0, term.col - term.c.x);
+ 
+@@ -1263,15 +1331,23 @@
+ 	size = term.col - src;
  	line = term.line[term.c.y];
  
++	oldline = xmalloc(term.col * sizeof(Glyph));
++	memmove(oldline, line, term.col * sizeof(Glyph));
  	memmove(&line[dst], &line[src], size * sizeof(Glyph));
-+	tsetdirtrange(dst, src, term.c.y);
  	tclearregion(term.col-n, term.c.y, term.col-1, term.c.y);
++	for (i = term.c.x; i < term.col; i++) {
++		if (memcmp(&line[i], &oldline[i], sizeof(Glyph)) != 0) {
++			tsetdirtcol(i, term.c.y);
++		}
++	}
++	free(oldline);
  }
  
-@@ -1281,6 +1350,7 @@
+ void
+ tinsertblank(int n)
+ {
+-	int dst, src, size;
+-	Glyph *line;
++	int dst, src, size, i;
++	Glyph *line, *oldline;
+ 
+ 	LIMIT(n, 0, term.col - term.c.x);
+ 
+@@ -1280,8 +1356,16 @@
+ 	size = term.col - dst;
  	line = term.line[term.c.y];
  
++	oldline = xmalloc(term.col * sizeof(Glyph));
++	memmove(oldline, line, term.col * sizeof(Glyph));
  	memmove(&line[dst], &line[src], size * sizeof(Glyph));
-+	tsetdirtrange(dst, src, term.c.y);
  	tclearregion(src, term.c.y, dst - 1, term.c.y);
++	for (i = term.c.x; i < term.col; i++) {
++		if (memcmp(&line[i], &oldline[i], sizeof(Glyph)) != 0) {
++			tsetdirtcol(i, term.c.y);
++		}
++	}
++	free(oldline);
  }
  
-@@ -2603,8 +2673,16 @@
+ void
+@@ -2603,8 +2687,16 @@
  	term.line = xrealloc(term.line, row * sizeof(Line));
  	term.alt  = xrealloc(term.alt,  row * sizeof(Line));
  	term.dirty = xrealloc(term.dirty, row * sizeof(*term.dirty));
@@ -203,7 +244,7 @@ diff -u st/st.c st-patched/st.c
  	/* resize each row to new width, zero-pad if needed */
  	for (i = 0; i < minrow; i++) {
  		term.line[i] = xrealloc(term.line[i], col * sizeof(Glyph));
-@@ -2656,14 +2734,20 @@
+@@ -2656,14 +2748,20 @@
  void
  drawregion(int x1, int y1, int x2, int y2)
  {
@@ -230,9 +271,9 @@ diff -u st/st.c st-patched/st.c
  	}
  }
  
-diff -u st/st.h st-patched/st.h
---- st/st.h	2025-10-05 01:53:11.167987562 +0200
-+++ st-patched/st.h	2025-10-05 01:57:41.325507996 +0200
+diff -u suckless-st/st.h st-patched-new/st.h
+--- suckless-st/st.h	2025-10-05 01:53:11.167987562 +0200
++++ st-patched-new/st.h	2025-10-05 15:38:44.585363953 +0200
 @@ -90,6 +90,9 @@
  void tnew(int, int);
  void tresize(int, int);
@@ -243,9 +284,10 @@ diff -u st/st.h st-patched/st.h
  void ttyhangup(void);
  int ttynew(const char *, char *, const char *, char **);
  size_t ttyread(void);
-diff -u st/x.c st-patched/x.c
---- st/x.c	2025-10-05 01:53:11.167987562 +0200
-+++ st-patched/x.c	2025-10-05 14:00:32.439134902 +0200
+Only in st-patched-new/: st.o
+diff -u suckless-st/x.c st-patched-new/x.c
+--- suckless-st/x.c	2025-10-05 01:53:11.167987562 +0200
++++ st-patched-new/x.c	2025-10-05 15:38:44.585566714 +0200
 @@ -1651,6 +1651,8 @@
  int
  xstartdraw(void)
@@ -255,3 +297,4 @@ diff -u st/x.c st-patched/x.c
  	return IS_SET(MODE_VISIBLE);
  }
  
+Only in st-patched-new/: x.o

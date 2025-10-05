@@ -1378,8 +1378,8 @@ tclearregion(int x1, int y1, int x2, int y2)
 void
 tdeletechar(int n)
 {
-	int dst, src, size;
-	Glyph *line;
+	int dst, src, size, i;
+	Glyph *line, *oldline;
 
 	LIMIT(n, 0, term.col - term.c.x);
 
@@ -1388,16 +1388,23 @@ tdeletechar(int n)
 	size = term.col - src;
 	line = term.line[term.c.y];
 
+	oldline = xmalloc(term.col * sizeof(Glyph));
+	memmove(oldline, line, term.col * sizeof(Glyph));
 	memmove(&line[dst], &line[src], size * sizeof(Glyph));
-	tsetdirtrange(dst, src, term.c.y);
 	tclearregion(term.col-n, term.c.y, term.col-1, term.c.y);
+	for (i = term.c.x; i < term.col; i++) {
+		if (memcmp(&line[i], &oldline[i], sizeof(Glyph)) != 0) {
+			tsetdirtcol(i, term.c.y);
+		}
+	}
+	free(oldline);
 }
 
 void
 tinsertblank(int n)
 {
-	int dst, src, size;
-	Glyph *line;
+	int dst, src, size, i;
+	Glyph *line, *oldline;
 
 	LIMIT(n, 0, term.col - term.c.x);
 
@@ -1406,9 +1413,16 @@ tinsertblank(int n)
 	size = term.col - dst;
 	line = term.line[term.c.y];
 
+	oldline = xmalloc(term.col * sizeof(Glyph));
+	memmove(oldline, line, term.col * sizeof(Glyph));
 	memmove(&line[dst], &line[src], size * sizeof(Glyph));
-	tsetdirtrange(dst, src, term.c.y);
 	tclearregion(src, term.c.y, dst - 1, term.c.y);
+	for (i = term.c.x; i < term.col; i++) {
+		if (memcmp(&line[i], &oldline[i], sizeof(Glyph)) != 0) {
+			tsetdirtcol(i, term.c.y);
+		}
+	}
+	free(oldline);
 }
 
 void
