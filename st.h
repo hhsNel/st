@@ -93,6 +93,9 @@ int tattrset(int);
 void tnew(int, int);
 void tresize(int, int);
 void tsetdirtattr(int);
+void tsetdirtcol(int, int); /* mark single cell as dirty */
+void tsetdirtrange(int, int, int); /* mark from X to X in a line as dirty */
+void tsetdirtrect(int, int, int, int); /* mark a rectangle as dirty */
 void ttyhangup(void);
 int ttynew(const char *, char *, const char *, char **);
 size_t ttyread(void);

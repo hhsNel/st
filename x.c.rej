@@ -1,14 +1,11 @@
---- x.c
-+++ x.c
-@@ -1111,10 +1123,10 @@ void
- xinit(int cols, int rows)
+--- x.c	2025-10-05 01:53:11.167987562 +0200
++++ x.c	2025-10-05 14:00:32.439134902 +0200
+@@ -1651,6 +1651,8 @@
+ int
+ xstartdraw(void)
  {
- 	XGCValues gcvalues;
--	Cursor cursor;
- 	Window parent;
- 	pid_t thispid = getpid();
- 	XColor xmousefg, xmousebg;
-+	Pixmap blankpm;
++	if (IS_SET(MODE_VISIBLE))
++		XCopyArea(xw.dpy, xw.win, xw.buf, dc.gc, 0, 0, win.w, win.h, 0, 0);
+ 	return IS_SET(MODE_VISIBLE);
+ }
  
- 	if (!(xw.dpy = XOpenDisplay(NULL)))
- 		die("can't open display\n");
