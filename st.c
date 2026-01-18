@@ -1050,6 +1050,14 @@ void
 tsetdirtrect(int x1, int y1, int x2, int y2) {
 	int i;
 
+	if(x1 > x2) {
+		tsetdirtrect(x2, y1, x1, y2);
+		return;
+	}
+	if(y1 > y2) {
+		tsetdirtrect(x1, y2, x2, y1);
+		return;
+	}
 	for (i = y1; i <= y2; i++) {
 		tsetdirtrange(x1, x2, i);
 	}
